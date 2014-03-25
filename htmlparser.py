@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
+import sys
 
-#with open('test.html', 'r') as f:
 testString = """<html>
-                <head>
+              i  <head>
                 <title>Parser</title>
                 </head>
                 <body>
@@ -10,16 +10,6 @@ testString = """<html>
                 <p> This is so cool!</p>
                 </body>
                 </html>"""
-
-bad = """<html>
-                <head>
-                <title>Parser</title>
-                </head>
-                <body>
-                <p> Hello</p>
-                <p> This is so cool!</p>
-                </body>
-                """
 
 class Node(object):
     def __init__(self, tagtype, children=None):
@@ -29,17 +19,14 @@ class Node(object):
             self.children = children
         self.tagtype = tagtype
 
-
     def add_child(self, child):
         self.children.append(child)
 
-    def to_str(self, nesting=1):
-        import pdb
-#        pdb.set_trace()
+    def prettystr(self, nesting=1):
         slist = [self.tagtype]
         for c in self.children:
             slist.append('\n' + '\t' * nesting)
-            slist.append(c.to_str(nesting + 1))
+            slist.append(c.prettystr(nesting + 1))
         return ''.join(slist)
 
 
@@ -58,7 +45,7 @@ def eat_html(s):
     s = s.strip()
     node = None
     rest = s
-    error = ""
+    error = "No opening <html> tag"
     if s.startswith('<html>'):
         headnode, rest, error = eat_head(s[len('<html>'):])
         if not error:
@@ -78,4 +65,12 @@ def parse(s):
 
 
 if __name__ == "__main__":
-    print parse(testString)[0].to_str()
+    if len(sys.argv) == 2:
+        with open(sys.argv[1], 'r') as f:
+            node, rest, error = parse(f.read())
+            if node:
+                print node.prettystr()
+            print '\n-Rest:\n' + rest
+            print '-Err:\n' + error
+    else:
+        print parse(testString)[0].prettystr()
